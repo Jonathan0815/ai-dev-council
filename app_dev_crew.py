@@ -3,7 +3,6 @@ from langchain_ollama import OllamaLLM
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-# CrewAI 1.5.0 + Ollama — no OpenAI key needed
 llm = OllamaLLM(model="llama3.1:8b")  # or "qwen2.5-coder:14b-instruct-q4_K_M"
 
 pm = Agent(role="Product Manager", goal="Create perfect specs", backstory="Senior PM", llm=llm, verbose=True)
