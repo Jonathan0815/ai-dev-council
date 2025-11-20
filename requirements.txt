@@ -73,7 +73,7 @@ h11==0.16.0
 hf-xet==1.2.0
 httpcore==1.0.9
 httptools==0.7.1
-httpx==0.27.2
+httpx==0.28.1
 httpx-sse==0.4.3
 huggingface_hub==1.1.4
 humanfriendly==10.0
@@ -144,7 +144,7 @@ nvidia-nvtx-cu12==12.8.90
 oauthlib==3.3.1
 ollama==0.6.1
 onnxruntime==1.23.2
-openai==1.51.0
+openai==2.8.1
 openpyxl==3.1.5
 opentelemetry-api==1.38.0
 opentelemetry-exporter-otlp-proto-common==1.38.0
