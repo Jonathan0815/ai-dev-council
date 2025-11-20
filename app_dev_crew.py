@@ -3,43 +3,18 @@ from langchain_ollama import OllamaLLM
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-# Ollama LLM
 llm = OllamaLLM(model="llama3.1:8b")  # or "qwen2.5-coder:14b-instruct-q4_K_M"
 
-# Agents
-pm = Agent(
-    role="Product Manager",
-    goal="Create perfect specs",
-    backstory="Senior PM",
-    llm=llm,
-    verbose=True
-)
+pm = Agent(role="Product Manager", goal="Create perfect specs", backstory="Senior PM", llm=llm, verbose=True)
+coder = Agent(role="Senior Full-Stack Developer", goal="Write complete code", backstory="Expert coder", llm=llm, verbose=True)
+reviewer = Agent(role="QA & Reviewer", goal="Find bugs and improve", backstory="Perfectionist", llm=llm, verbose=True)
 
-coder = Agent(
-    role="Senior Full-Stack Developer",
-    goal="Write complete code",
-    backstory="Expert coder",
-    llm=llm,
-    verbose=True
-)
-
-reviewer = Agent(
-    role="QA & Reviewer",
-    goal="Find bugs and improve",
-    backstory="Perfectionist",
-    llm=llm,
-    verbose=True
-)
-
-# Tasks
 t1 = Task(description="Research and write detailed spec for: {idea}", expected_output="spec.md", agent=pm)
 t2 = Task(description="Write all code based on the spec", expected_output="Complete code", agent=coder, context=[t1])
 t3 = Task(description="Review, test mentally, fix bugs, improve performance/security", expected_output="Final polished code", agent=reviewer, context=[t2])
 
-# Crew — verbose=2 → verbose=True (the only thing that was breaking it)
 crew = Crew(agents=[pm, coder, reviewer], tasks=[t1, t2, t3], verbose=True)
 
-# FastAPI
 app = FastAPI()
 
 class Idea(BaseModel):
