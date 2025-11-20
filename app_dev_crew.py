@@ -12,8 +12,7 @@ pm = Agent(
     goal="Create perfect specs",
     backstory="Senior PM",
     llm=llm,
-    verbose=True,
-    allow_delegation=False
+    verbose=True
 )
 
 coder = Agent(
@@ -21,8 +20,7 @@ coder = Agent(
     goal="Write complete code",
     backstory="Expert coder",
     llm=llm,
-    verbose=True,
-    allow_delegation=False
+    verbose=True
 )
 
 reviewer = Agent(
@@ -30,8 +28,7 @@ reviewer = Agent(
     goal="Find bugs and improve",
     backstory="Perfectionist",
     llm=llm,
-    verbose=True,
-    allow_delegation=False
+    verbose=True
 )
 
 # Tasks
