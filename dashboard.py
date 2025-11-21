@@ -4,107 +4,88 @@ import json
 import os
 import time
 
-# Config
 CODE_DIR = "generated_code"
 LOG_FILE = "council_logs.json"
 os.makedirs(CODE_DIR, exist_ok=True)
 
 # Session state
-if 'current_code' not in st.session_state:
-    st.session_state.current_code = ""
-if 'last_result' not in st.session_state:
-    st.session_state.last_result = ""
+for k in ["current_code", "last_result", "theme"]:
+    if k not in st.session_state:
+        st.session_state[k] = "" if k != "theme" else "dark"
 
-st.set_page_config(page_title="AI Dev Council v1.5", layout="wide")
-st.title("AI Dev Council v1.5 — Fully Local")
-st.markdown("**Council Status: Evolving...** | Arc B580 | 14B qwen2.5-coder")
+# Theme
+if st.session_state.theme == "dark":
+    st.markdown("<style> .stApp { background: #0e1117; color: white; } </style>", unsafe_allow_html=True)
+
+st.set_page_config(page_title="AI Dev Council v1.7", layout="wide")
+st.title("AI Dev Council v1.7 — Clean & Focused")
+st.caption("Council heartbeat • Fully local • 14B qwen2.5-coder")
 
 # Sidebar
-st.sidebar.title("Controls")
+with st.sidebar:
+    st.header("Theme")
+    st.session_state.theme = st.selectbox("Mode", ["dark", "light"], index=0 if st.session_state.theme=="dark" else 1)
+    
+    st.header("Logs")
+    if st.button("Clear logs"):
+        if os.path.exists(LOG_FILE):
+            os.remove(LOG_FILE)
+        st.success("Logs cleared")
+        st.rerun()
+    
+    if os.path.exists(LOG_FILE):
+        try:
+            logs = json.load(open(LOG_FILE))
+            for entry in logs[-15:]:
+                avatar = {"PM": "PM", "Senior Developer": "Coder", "QA Engineer": "QA", "Council": "Council", "Result": "Result"}.get(entry["agent"], "AI")
+                with st.chat_message(entry["agent"], avatar=avatar):
+                    st.write(f"**{entry['agent']}** – {entry['timestamp']}")
+                    st.caption(entry["content"])
+        except:
+            st.write("No valid logs")
+    else:
+        st.write("No logs yet")
+    
+    st.header("Task History")
+    if os.path.exists(LOG_FILE):
+        tasks = {e["task"]: e["task"] for e in logs if e["task"] != "unknown"}
+        chosen = st.selectbox("Reload past task", [""] + list(tasks.keys()))
+        if chosen:
+            st.session_state.task_input = chosen
 
-# Theme toggle
-theme = st.sidebar.selectbox("Theme", ["Light", "Dark"], index=0)
-if theme == "Dark":
-    st.markdown("""
-    <style>
-        .stApp { background-color: #0e1117; color: white; }
-        .stTextInput > div > div > input { background-color: #1e1e1e; color: white; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# File explorer
-st.sidebar.subheader("Files")
-py_files = [f for f in os.listdir(CODE_DIR) if f.endswith('.py')]
-if py_files:
-    selected_file = st.sidebar.selectbox("Open file", py_files)
-    if selected_file:
-        path = os.path.join(CODE_DIR, selected_file)
-        with open(path, 'r') as f:
-            st.session_state.current_code = f.read()
-        st.sidebar.success(f"Loaded {selected_file}")
-
-# GPU stats
-st.sidebar.subheader("GPU")
-try:
-    out = subprocess.run(["intel_gpu_top", "-J"], capture_output=True, text=True, timeout=3)
-    data = json.loads(out.stdout)
-    usage = data.get("engines", [{}])[0].get("busy", "N/A")
-    st.sidebar.metric("Usage", f"{usage}%")
-except:
-    st.sidebar.write("—")
-
-# Main editor (native Streamlit — no external deps)
-col1, col2 = st.columns([3, 1])
+# Main area
+col1, col2 = st.columns([3,1])
 with col1:
     st.subheader("Code Editor")
-    code = st.text_area(
-        "Edit code here",
-        value=st.session_state.current_code,
-        height=600,
-        help="Write Python code. Hit 'Run' to execute."
-    )
+    code = st.text_area("Edit / paste code", st.session_state.current_code, height=600)
     st.session_state.current_code = code
 
 with col2:
-    st.subheader("Actions")
     if st.button("Run Code", type="primary"):
-        with st.spinner("Executing..."):
-            try:
-                res = subprocess.run(["python", "-c", code], capture_output=True, text=True, timeout=30)
-                if res.stdout:
-                    st.success("Output:")
-                    st.code(res.stdout)
-                if res.stderr:
-                    st.error("Error:")
-                    st.code(res.stderr)
-            except Exception as e:
-                st.error(f"Run failed: {e}")
-
-    if st.button("Save File"):
-        name = st.text_input("Filename (e.g., script.py)", value="script.py")
-        if name:
-            path = os.path.join(CODE_DIR, name)
-            with open(path, "w") as f:
+        with st.spinner("Running..."):
+            res = subprocess.run(["python", "-c", code], capture_output=True, text=True, timeout=30)
+            if res.stdout: st.code(res.stdout)
+            if res.stderr: st.error(res.stderr)
+    
+    if st.button("Save as .py"):
+        name = st.text_input("Filename", "script.py")
+        if st.button("Save"):
+            with open(os.path.join(CODE_DIR, name), "w") as f:
                 f.write(code)
             st.success(f"Saved {name}")
             st.rerun()
 
-# Council task
-st.subheader("Feed the Council")
-task = st.text_area("Task description", height=120, placeholder="e.g. 'Build a simple calculator CLI'")
+# Council input
+st.subheader("Task for the Council")
+task = st.text_area("Your task", value=st.session_state.get("task_input",""), height=120, key="task_input")
 if st.button("Start Council"):
-    with st.spinner("Council thinking..."):
+    with st.spinner("Council is working..."):
         from app_dev_crew import run_council
         result = run_council(task)
         st.session_state.last_result = result
-        st.markdown(result)
+        st.success("Done!")
+        st.rerun()  # Auto-refresh logs
 
 if st.session_state.last_result:
-    st.subheader("Council Result")
+    st.subheader("Result")
     st.markdown(st.session_state.last_result)
-
-# Evolution
-st.subheader("Self-Evolution")
-if st.button("Evolve to v2.0 (Pure Python)"):
-    st.balloons()
-    st.info("v1.6 will generate your successor here...")
