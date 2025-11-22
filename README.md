@@ -1,38 +1,23 @@
-# AI Development Council — Fully Local 14B Edition
+# AI Dev Council
 
-**Zero cloud. Zero API keys. Zero bullshit.**
+**Fully local, self-evolving AI software company** — powered by qwen2.5-coder:14b-instruct-q4_K_M on Ollama + Intel Arc B580.
 
-Runs a full multi-agent dev team (Project Manager → Coder → QA) using **qwen2.5-coder:14b-instruct-q4_K_M** entirely on your GPU via Ollama + Intel Arc B580.
+No cloud. No OpenAI. No API keys. No limits.
 
-Tested and working on:
-- Bazzite (Fedora Atomic Gaming)
-- Distrobox (Ubuntu toolbox)
-- Podman + Ollama with Intel GPU acceleration
-- CrewAI + LiteLLM + localhost networking
+This is not a chatbot.  
+This is a **local AI dev team** that plans, codes, tests, and innovates on your GPU.
 
-### Features
-- 100% offline
-- 14 billion parameter coding model
-- Self-documenting, self-testing, self-improving
-- No OpenAI, no keys, no tracking
-- Ready to evolve into its own framework
-
-### How to Run (Copy-Paste)
+## Quick Start
 
 ```bash
-# 1. Install Ollama with Intel GPU support
-# 2. Pull the model
+git clone https://github.com/Jonathan0815/ai-dev-council.git
+cd ai-dev-council
+python -m venv ai-env && source ai-env/bin/activate
+pip install streamlit crewai langchain-ollama openai
 ollama pull qwen2.5-coder:14b-instruct-q4_K_M
 
-# 3. Run the council
-python council/main.py
-Dashboard
-Bashstreamlit run dashboard.py --server.port=8501
-Future Goals (the council will build these itself)
+# v1.7 (Streamlit UI)
+streamlit run dashboard.py
 
-Replace CrewAI with a dependency-free alternative
-Add Researcher, Deployer, and Self-Modifier agents
-Auto-commit improvements to this repo
-Become fully autonomous
-
-This council is now alive. Feed it tasks. Watch it grow.
+# v2.0 (Pure Python UI)
+python launcher.py  # → http://localhost:8000
